@@ -35,7 +35,7 @@
 	"peerDependencies": {},
 	"dependencies": {
 		"chalk": "^1.0.0",
-		"window-size": "^0.2.0"
+		"cli-size": "^1.0.0"
 	},
 	"keywords": [
 		"game",
@@ -50,9 +50,9 @@
 	},
 	"licenses": [
 		{
-			"type": "GNU-GPL",
+			"type": "GPL-3.0",
 			"url": "https://github.com/dominikwilkowski/beast.js/blob/master/LICENSE"
 		}
 	],
-	"license": "GNU-GPLv3"
+	"license": "GPL-3.0"
 }

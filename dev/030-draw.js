@@ -71,7 +71,7 @@ BEAST.draw = (() => {
 				BEAST.RL.write(`${spaceleft}${Chalk.gray(`╔${'═'.repeat( BEAST.MINWIDTH - 2 )}╗`)}\n`);
 				BEAST.RL.write(`${spaceleft}${Chalk.gray(`║${' '.repeat( BEAST.MINWIDTH - 2 )}║`)}\n`.repeat( BEAST.MINHEIGHT - 7 ));
 				BEAST.RL.write(`${spaceleft}${Chalk.gray(`╚${'═'.repeat( BEAST.MINWIDTH - 2 )}╝`)}\n`);
-				BEAST.RL.write(`${spaceleft}  ${Chalk.red('❤  ❤  ❤  ❤')}\n${spaceleft}  ??`);
+				BEAST.RL.write(`${spaceleft}  ${Chalk.red('❤  ❤  ❤  ❤')}\n`);
 
 				BEAST.RL.write( spacetop );
 			}

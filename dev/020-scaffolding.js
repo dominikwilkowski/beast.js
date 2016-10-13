@@ -67,7 +67,7 @@ BEAST.scaffolding = (() => {
 
 			let blocks = 0; //keep track of blocks we distribute
 
-			while( blocks < BEAST.LEVELS[ BEAST.LEVEL ].block ) {
+			while( blocks < BEAST.LEVELS[ BEAST.LEVEL ][ element ] ) {
 				let randomX = Math.floor( Math.random() * (BEAST.MINWIDTH - 2) + 0 );
 				let randomY = Math.floor( Math.random() * (BEAST.MINHEIGHT - 7) + 0 );
 

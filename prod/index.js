@@ -33,35 +33,40 @@ const BEAST = (() => { //constructor factory
 		DEBUG: false, //debug settings
 		DEBUGLEVEL: 2,  //debug level setting
 		MINWIDTH: 120,  //width of the game canvas
-		MINHEIGHT: 40,  //height of the game canvas
+		MINHEIGHT: 40,  //height of the game canvas (reuse in BEAST.HERO.y)
 		BOARD: [],      //the board representation in integers
-		HERO: {        //the start position of the player
+		START: {         //the start position of the player, the beasts start on the opposite end
 			x: 1,         //left aligned
 			y: (40 - 8),  //we take MINHEIGHT - 8 to get to the bottom
 		},
+		HERO: {},       //position tracking for our hero
+		DEAD: false,    //when the hero dies he/she can't move no more
+		BEASTS: {},     //position tracking for all beasts
+		LIVES: 4,       //how many lives do we have?
+		DEATHS: 0,      //how many times have we died so far?
 		LEVEL: 1,       //the current level (we start with 1 duh)
 		LEVELS: {       //the amount of elements per level
 			1: {          //start easy
 				beast: 10,
-				block: 200,
-				solid: 10,
+				block: 400,
+				solid: 50,
 			},
 			2: {          //increase beasts and solids, decrease blocks
 				beast: 30,
-				block: 150,
-				solid: 50,
+				block: 250,
+				solid: 200,
 			},
 			3: {          //increase beasts and solids, decrease blocks
 				beast: 50,
 				block: 100,
-				solid: 100,
+				solid: 500,
 			},
 		},
 		SYMBOLS: {      //symbols for element
-			hero: Chalk.cyan('¶'),
-			beast: 'Θ',
-			block: '░',
-			solid: '▓',
+			hero: Chalk.cyan('¶'), //█
+			beast: Chalk.green('Θ'),
+			block: Chalk.gray('▓'),
+			solid: Chalk.white('▓'),
 		},
 		RL: {},         //The readline object for reuse in all modules
 
@@ -173,7 +178,13 @@ BEAST.scaffolding = (() => {
 		init: () => {
 			BEAST.debugging.report(`scaffolding: running init`, 1);
 
+			BEAST.HERO = {
+				x: BEAST.START.x,
+				y: BEAST.START.y,
+			};
+
 			BEAST.scaffolding.cords();             //we need to fill the BEAST.BOARD with empty arrays
+			BEAST.scaffolding.beasts();            //add beasts
 			BEAST.scaffolding.element( 'block' );  //add blocks to BEAST.BOARD
 			BEAST.scaffolding.element( 'solid' );  //add solids to BEAST.BOARD
 			BEAST.scaffolding.hero();              //last but not least we need the hero in BEAST.BOARD
@@ -206,6 +217,33 @@ BEAST.scaffolding = (() => {
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Public function
+// beasts, Scaffold beasts onto the board
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+		beasts: () => {
+			BEAST.debugging.report(`scaffolding: running beasts`, 1);
+
+			let beasts = 0; //keep track of the beasts we distribute
+
+			while( beasts < BEAST.LEVELS[ BEAST.LEVEL ]['beast'] ) {
+				let randomX = Math.floor( Math.random() * ((BEAST.MINWIDTH - 2) - ( BEAST.MINWIDTH / 2 )) + ( BEAST.MINWIDTH / 2 ) );
+				let randomY = Math.floor( Math.random() * (((BEAST.MINHEIGHT - 7) / 2) - 0) + 0 );
+
+				if( BEAST.BOARD[ randomY ][ randomX ] === undefined ) { //no other elements on the spot
+					BEAST.BOARD[ randomY ][ randomX ] = 'beast'; //adding beast onto board
+
+					BEAST.BEASTS[`${randomX}x${randomY}`] = { //adding beast to beast registry
+						x: randomX,
+						y: randomY,
+					}
+
+					beasts ++;
+				}
+			}
+		},
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Public function
 // element, Randomly create and distribute elements on the board
 //
 // @param  element  {keyword}  We can only scaffold 'beast', 'block', 'solid'
@@ -213,11 +251,11 @@ BEAST.scaffolding = (() => {
 		element: ( element ) => {
 			BEAST.debugging.report(`scaffolding: running blocks`, 1);
 
-			let blocks = 0; //keep track of blocks we distribute
+			let count = 0; //keep track of elements we distribute
 
-			while( blocks < BEAST.LEVELS[ BEAST.LEVEL ].block ) {
-				let randomX = Math.floor( Math.random() * (BEAST.MINWIDTH - 2) + 0 );
-				let randomY = Math.floor( Math.random() * (BEAST.MINHEIGHT - 7) + 0 );
+			while( count < BEAST.LEVELS[ BEAST.LEVEL ][ element ] ) {
+				let randomX = Math.floor( Math.random() * ((BEAST.MINWIDTH - 2) - 0 ) + 0 );
+				let randomY = Math.floor( Math.random() * ((BEAST.MINHEIGHT - 7) - 0 ) + 0 );
 
 				if(
 					randomY + '-' + randomX != ( BEAST.HERO.y + 1 ) + '-' + ( BEAST.HERO.x - 1 ) && //row after one column before
@@ -235,7 +273,7 @@ BEAST.scaffolding = (() => {
 					BEAST.BOARD[ randomY ][ randomX ] === undefined //no other elements on the spot
 				) {
 					BEAST.BOARD[ randomY ][ randomX ] = element;
-					blocks ++;
+					count ++;
 				}
 			}
 		},
@@ -269,10 +307,14 @@ BEAST.draw = (() => {
 	const printLine = ( item ) => {
 		BEAST.debugging.report(`draw: running printLine`, 1);
 
-		let spaceleft = Math.floor( ( CliSize().columns - BEAST.MINWIDTH ) / 2 ); //horizontal alignment
-		spaceleft = ' '.repeat( spaceleft );
+		//testing screen size and just printing on error
+		let error = BEAST.checkSize();
+		if( error === '' ) {
+			let spaceLeft = Math.floor( ( CliSize().columns - BEAST.MINWIDTH ) / 2 ); //horizontal alignment
+			spaceLeft = ' '.repeat( spaceLeft );
 
-		BEAST.RL.write(`${spaceleft}${Chalk.gray(`║`)}${item}\n`); //print line inside the frame
+			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${item}\n`); //print line inside the frame
+		}
 	}
 
 
@@ -288,7 +330,6 @@ BEAST.draw = (() => {
 
 			Readline.cursorTo( BEAST.RL, 0, 0 ); //go to top of board
 			Readline.clearScreenDown( BEAST.RL ); //clear screen
-			// Readline.clearLine( BEAST.RL, 0 ); //clear current line
 
 			//testing screen size and just printing on error
 			let error = BEAST.checkSize();
@@ -298,26 +339,56 @@ BEAST.draw = (() => {
 				BEAST.RL.write(`\n\n${error}`);
 			}
 			else {
-				let spaceleft = Math.floor( ( CliSize().columns - BEAST.MINWIDTH ) / 2 ); //horizontal alignment
-				spaceleft = ' '.repeat( spaceleft );
+				let spaceLeft = Math.floor( ( CliSize().columns - BEAST.MINWIDTH ) / 2 ); //horizontal alignment
+				spaceLeft = ' '.repeat( spaceLeft );
 
 				let spacetop = Math.ceil( ( CliSize().rows - BEAST.MINHEIGHT ) / 2 ); //vertically alignment
 				spacetop = `\n`.repeat( spacetop );
 
 				BEAST.RL.write( spacetop );
 				BEAST.RL.write(
-					`${spaceleft}${Chalk.green(`  ╔╗  ╔═╗ ╔═╗ ╔═╗ ╔╦╗`)}\n` +
-					`${spaceleft}${Chalk.cyan (`  ╠╩╗ ║╣  ╠═╣ ╚═╗  ║`)}\n` +
-					`${spaceleft}${Chalk.white(`  ╚═╝ ╚═╝ ╩ ╩ ╚═╝  ╩`)}\n`
+					`${spaceLeft}${Chalk.green(`  ╔╗  ╔═╗ ╔═╗ ╔═╗ ╔╦╗`)}\n` +
+					`${spaceLeft}${Chalk.cyan (`  ╠╩╗ ║╣  ╠═╣ ╚═╗  ║`)}\n` +
+					`${spaceLeft}${Chalk.white(`  ╚═╝ ╚═╝ ╩ ╩ ╚═╝  ╩`)}\n`
 				);
 
-				BEAST.RL.write(`${spaceleft}${Chalk.gray(`╔${'═'.repeat( BEAST.MINWIDTH - 2 )}╗`)}\n`);
-				BEAST.RL.write(`${spaceleft}${Chalk.gray(`║${' '.repeat( BEAST.MINWIDTH - 2 )}║`)}\n`.repeat( BEAST.MINHEIGHT - 7 ));
-				BEAST.RL.write(`${spaceleft}${Chalk.gray(`╚${'═'.repeat( BEAST.MINWIDTH - 2 )}╝`)}\n`);
-				BEAST.RL.write(`${spaceleft}  ${Chalk.red('❤  ❤  ❤  ❤')}\n`);
+				BEAST.RL.write(`${spaceLeft}${Chalk.gray(`┌${'─'.repeat( BEAST.MINWIDTH - 2 )}┐`)}\n`);
+				BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│${' '.repeat( BEAST.MINWIDTH - 2 )}│`)}\n`.repeat( BEAST.MINHEIGHT - 7 ));
+				BEAST.RL.write(`${spaceLeft}${Chalk.gray(`└${'─'.repeat( BEAST.MINWIDTH - 2 )}┘`)}\n\n`);
 
 				BEAST.RL.write( spacetop );
 			}
+
+			customStdout.muted = true;
+		},
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Public function
+// score, Draw the score at the bottom of the frame
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+		score: () => {
+			customStdout.muted = false;
+
+			//testing screen size and just printing on error
+			let error = BEAST.checkSize();
+			if( error === '' ) {
+				let top = Math.floor( ( CliSize().rows - BEAST.MINHEIGHT ) / 2 );
+				Readline.cursorTo( BEAST.RL, 0, (top + 4 + ( BEAST.MINHEIGHT - 6 )) ); //go to bottom of board
+
+				let spaceLeft = Math.floor( ( CliSize().columns - BEAST.MINWIDTH ) / 2 ); //horizontal alignment
+				spaceLeft = ' '.repeat( spaceLeft );
+
+				//calculate the space between lives and beast count
+				let spaceMiddle = ( BEAST.MINWIDTH - 2 ) - ( 3 * BEAST.LIVES ) - 6 - ( Object.keys( BEAST.BEASTS ).length.toString().length );
+
+				BEAST.RL.write(`${spaceLeft}${Chalk.red('  ❤').repeat( BEAST.LIVES - BEAST.DEATHS )}${Chalk.gray('  ❤').repeat( BEAST.DEATHS )}`);
+				BEAST.RL.write(`${' '.repeat( spaceMiddle )}  ${ Object.keys( BEAST.BEASTS ).length } x ${BEAST.SYMBOLS.beast}`);
+
+				Readline.cursorTo( BEAST.RL, 0, (CliSize().rows - 1) ); //go to bottom of board and rest cursor there
+			}
+
+			customStdout.muted = true;
 		},
 
 
@@ -358,21 +429,49 @@ BEAST.draw = (() => {
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Public function
+// message, Drawing a message in the center of the screen
+//
+// @param  message  {string}  The string to be written to the screen
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+		message: ( message ) => {
+			customStdout.muted = false; //allow output so we can draw
+
+			let top = Math.floor( ( CliSize().rows - BEAST.MINHEIGHT ) / 2 );
+			Readline.cursorTo( BEAST.RL, 0, (top + 4 + Math.floor( ( BEAST.MINHEIGHT - 7 ) / 2 ) - 1) ); //go to middle of board
+
+			let spaceLeft = Math.floor( ( CliSize().columns - BEAST.MINWIDTH ) / 2 ); //space left from frame
+			spaceLeft = ' '.repeat( spaceLeft );
+
+			let spaceCenter = Math.floor( ( (BEAST.MINWIDTH - 2) / 2 ) - ( message.length / 2 ) );
+
+			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
+			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( spaceCenter )}${message}${' '.repeat( spaceCenter )}\n`);
+			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
+
+			Readline.cursorTo( BEAST.RL, 0, (CliSize().rows - 1) ); //go to bottom of board and rest cursor there
+
+			customStdout.muted = true; //no more user output now!
+		},
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Public function
 // init, Scaffold the canvas
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		init: () => {
 			BEAST.debugging.report(`draw: init`, 1);
 
 			BEAST.draw.frame(); //draw frame,
+			BEAST.draw.score(); //draw score,
 			BEAST.draw.board(); //draw board, I mean the function names are kinda obvious so this comment really doesn't help much.
 		},
 	}
 })();
 /***************************************************************************************************************************************************************
  *
- * Move
+ * Hero
  *
- * Moving the hero and checking for collisions and blocks
+ * Moving the hero and checking for collisions, blocks and deaths
  *
  **************************************************************************************************************************************************************/
 
@@ -385,7 +484,7 @@ BEAST.draw = (() => {
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Module
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
-BEAST.move = (() => {
+BEAST.hero = (() => {
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Private function
@@ -396,7 +495,7 @@ BEAST.move = (() => {
 // @return           {boolean}  True or false
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 	const _isOutOfBounds = ( position ) => {
-		BEAST.debugging.report(`move: running _isOutOfBounds`, 1);
+		BEAST.debugging.report(`hero: running _isOutOfBounds`, 1);
 
 		let outofbounds = false; //let's assume the best
 
@@ -422,11 +521,13 @@ BEAST.move = (() => {
 // @return           {boolean}  True or false
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 	const push = ( dir, step ) => {
-		BEAST.debugging.report(`move: running push`, 1);
+		BEAST.debugging.report(`hero: running push`, 1);
 
 		let element = '';
 		let canMove = true;
 		let elements = [];
+		let pushBeast = false;
+		let beastPosition = {};
 		let position = { //our current position as clone
 			x: BEAST.HERO.x,
 			y: BEAST.HERO.y,
@@ -442,8 +543,42 @@ BEAST.move = (() => {
 
 			element = BEAST.BOARD[ position.y ][ position.x ]; //whats the element on the board on this step?
 
-			if( element === 'solid' || _isOutOfBounds( position ) ) { //can't push pasted the bounds or move a solid mate!
+			if( element === 'beast' && elements.length === 0 ) { //You just walked into a beast = you dead!
+				BEAST.hero.die(); //gone, done for, good bye
+
+				return false;
+			}
+
+			if(
+				element === 'solid' ||      //can't push no solid
+				element === 'beast' ||      //can't push the beast around. beast eats you
+				_isOutOfBounds( position )  //can't push past the bounds
+			) {
 				canMove = false;
+			}
+
+			if( element === 'beast' && !pushBeast ) { //if we got a beast by itself
+				pushBeast = true;
+
+				beastPosition = { //save the position of that beast for later squashing
+					x: position.x,
+					y: position.y,
+				};
+			}
+
+			if(
+				element === 'block' && pushBeast || //now we got a block right after a beast = squash it!
+				element === 'solid' && pushBeast //a solid after a beast = squash it too
+			) {
+				if( elements[0] !== 'solid' ) {
+					canMove = true; //even though there is a beast in the way we can totally squash it
+				}
+
+				elements.splice( (elements.length - 1), 1 );   //remove the beast from the things we will push
+				elements.push( element ); //move the block
+				BEAST.beasts.squash( beastPosition ); //squash that beast real good
+
+				break; //no other elements need to be pushed now
 			}
 
 			if( element !== undefined ) {
@@ -455,7 +590,7 @@ BEAST.move = (() => {
 			let i = 1;
 
 			while( position[ dir ] != BEAST.HERO[ dir ] ) { //stop when we're back where we started
-				element = elements[ elements.length - i ]; //get the saved element
+				element = elements[ elements.length - i ];    //get the saved element
 
 				BEAST.BOARD[ position.y ][ position.x ] = element; //place it on the board
 
@@ -469,38 +604,105 @@ BEAST.move = (() => {
 
 
 	return {
+
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Public function
-// hero, Move hero
+// move, Move hero
 //
 // @param  dir   {string}   The direction we are moving towards
 // @param  step  {integer}  The increment of the movement. 1 = move right, -1 = move left
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
-		hero: ( dir, step ) => {
-			BEAST.debugging.report(`move: hero`, 1);
+		move: ( dir, step ) => {
+			BEAST.debugging.report(`hero: running move`, 1);
 
-			let position = { //our current position
-				x: BEAST.HERO.x,
-				y: BEAST.HERO.y,
-			};
-			position[ dir ] += step; //move
+			if( !BEAST.DEAD ) {
+				let position = { //our current position
+					x: BEAST.HERO.x,
+					y: BEAST.HERO.y,
+				};
+				position[ dir ] += step; //move
 
-			if( !_isOutOfBounds( position ) ) { //check to stay within bounds
-				let _isPushable = push( dir, step );
+				if( !_isOutOfBounds( position ) ) {    //check to stay within bounds
+					let _isPushable = push( dir, step ); //can we even push?
 
-				if( _isPushable ) {
-					BEAST.BOARD[ BEAST.HERO.y ][ BEAST.HERO.x ] = undefined; //clear old position
-					BEAST.HERO = position; //update global position
+					if( _isPushable ) {
+						BEAST.BOARD[ BEAST.HERO.y ][ BEAST.HERO.x ] = undefined; //clear old position
+						BEAST.HERO = position; //update global position
 
-					if( _isOutOfBounds( BEAST.HERO ) ) { //check to stay within bounds
-						BEAST.HERO[ dir ] -= step; //reset move
+						BEAST.BOARD[ BEAST.HERO.y ][ BEAST.HERO.x ] = 'hero'; //set new position
+
+						BEAST.draw.board(); //now draw it up
 					}
-
-					BEAST.BOARD[ BEAST.HERO.y ][ BEAST.HERO.x ] = 'hero'; //set new position
-
-					BEAST.draw.board();
 				}
 			}
+		},
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Public function
+// die, Hero dies
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+		die: ( ) => {
+			BEAST.debugging.report(`hero: running die`, 1);
+
+			BEAST.DEATHS ++;
+			BEAST.DEAD = true;
+
+			BEAST.draw.message('You died :`(');
+
+			setTimeout(() => {
+				BEAST.DEAD = false;
+				BEAST.scaffolding.init();
+				BEAST.draw.init();
+			}, 3000);
+		},
+	}
+})();
+/***************************************************************************************************************************************************************
+ *
+ * Beasts
+ *
+ * Breathing live into beasts, making them move and killing them off too
+ *
+ **************************************************************************************************************************************************************/
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Dependencies
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Module
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+BEAST.beasts = (() => {
+
+	return {
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Public function
+// squash, Squash a beast
+//
+// @param  position  {object}  The x position of the beast on the board in format: { x: 1, y: 1 }
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+		squash: ( position ) => {
+			BEAST.debugging.report(`beasts: squash`, 1);
+
+			delete BEAST.BEASTS[`${position.x}x${position.y}`]; //delete beast from the registry
+
+			//disable interval for movement
+
+			BEAST.draw.score(); //draw the score again as it just changed!
+		},
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Public function
+// init, Adding the intervals for each beast for their movements
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+		init: () => {
+			BEAST.debugging.report(`beasts: init`, 1);
+
+			//
 		},
 	}
 })();
@@ -594,6 +796,7 @@ BEAST.init = () => {
 
 	process.on("SIGWINCH", () => { //redraw frame and board on terminal resize
 		BEAST.draw.frame();
+		BEAST.draw.score();
 		BEAST.draw.board();
 	});
 
@@ -601,16 +804,16 @@ BEAST.init = () => {
 		BEAST.RL.clearLine();
 
 		if( key.name === 'right' ) {
-			BEAST.move.hero( 'x', 1 );
+			BEAST.hero.move( 'x', 1 );
 		}
 		else if( key.name === 'left' ) {
-			BEAST.move.hero( 'x', -1 );
+			BEAST.hero.move( 'x', -1 );
 		}
 		else if( key.name === 'up' ) {
-			BEAST.move.hero( 'y', -1 );
+			BEAST.hero.move( 'y', -1 );
 		}
 		else if( key.name === 'down' ) {
-			BEAST.move.hero( 'y', 1 );
+			BEAST.hero.move( 'y', 1 );
 		}
 		else {
 			return;

@@ -1,8 +1,8 @@
 /***************************************************************************************************************************************************************
  *
- * Move
+ * Hero
  *
- * Moving the hero and checking for collisions and blocks
+ * Moving the hero and checking for collisions, blocks and deaths
  *
  **************************************************************************************************************************************************************/
 
@@ -15,7 +15,7 @@
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Module
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
-BEAST.move = (() => {
+BEAST.hero = (() => {
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Private function
@@ -26,7 +26,7 @@ BEAST.move = (() => {
 // @return           {boolean}  True or false
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 	const _isOutOfBounds = ( position ) => {
-		BEAST.debugging.report(`move: running _isOutOfBounds`, 1);
+		BEAST.debugging.report(`hero: running _isOutOfBounds`, 1);
 
 		let outofbounds = false; //let's assume the best
 
@@ -52,11 +52,13 @@ BEAST.move = (() => {
 // @return           {boolean}  True or false
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 	const push = ( dir, step ) => {
-		BEAST.debugging.report(`move: running push`, 1);
+		BEAST.debugging.report(`hero: running push`, 1);
 
 		let element = '';
 		let canMove = true;
 		let elements = [];
+		let pushBeast = false;
+		let beastPosition = {};
 		let position = { //our current position as clone
 			x: BEAST.HERO.x,
 			y: BEAST.HERO.y,
@@ -72,8 +74,42 @@ BEAST.move = (() => {
 
 			element = BEAST.BOARD[ position.y ][ position.x ]; //whats the element on the board on this step?
 
-			if( element === 'solid' || _isOutOfBounds( position ) ) { //can't push pasted the bounds or move a solid mate!
+			if( element === 'beast' && elements.length === 0 ) { //You just walked into a beast = you dead!
+				BEAST.hero.die(); //gone, done for, good bye
+
+				return false;
+			}
+
+			if(
+				element === 'solid' ||      //can't push no solid
+				element === 'beast' ||      //can't push the beast around. beast eats you
+				_isOutOfBounds( position )  //can't push past the bounds
+			) {
 				canMove = false;
+			}
+
+			if( element === 'beast' && !pushBeast ) { //if we got a beast by itself
+				pushBeast = true;
+
+				beastPosition = { //save the position of that beast for later squashing
+					x: position.x,
+					y: position.y,
+				};
+			}
+
+			if(
+				element === 'block' && pushBeast || //now we got a block right after a beast = squash it!
+				element === 'solid' && pushBeast //a solid after a beast = squash it too
+			) {
+				if( elements[0] !== 'solid' ) {
+					canMove = true; //even though there is a beast in the way we can totally squash it
+				}
+
+				elements.splice( (elements.length - 1), 1 );   //remove the beast from the things we will push
+				elements.push( element ); //move the block
+				BEAST.beasts.squash( beastPosition ); //squash that beast real good
+
+				break; //no other elements need to be pushed now
 			}
 
 			if( element !== undefined ) {
@@ -85,7 +121,7 @@ BEAST.move = (() => {
 			let i = 1;
 
 			while( position[ dir ] != BEAST.HERO[ dir ] ) { //stop when we're back where we started
-				element = elements[ elements.length - i ]; //get the saved element
+				element = elements[ elements.length - i ];    //get the saved element
 
 				BEAST.BOARD[ position.y ][ position.x ] = element; //place it on the board
 
@@ -99,38 +135,57 @@ BEAST.move = (() => {
 
 
 	return {
+
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Public function
-// hero, Move hero
+// move, Move hero
 //
 // @param  dir   {string}   The direction we are moving towards
 // @param  step  {integer}  The increment of the movement. 1 = move right, -1 = move left
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
-		hero: ( dir, step ) => {
-			BEAST.debugging.report(`move: hero`, 1);
+		move: ( dir, step ) => {
+			BEAST.debugging.report(`hero: running move`, 1);
 
-			let position = { //our current position
-				x: BEAST.HERO.x,
-				y: BEAST.HERO.y,
-			};
-			position[ dir ] += step; //move
+			if( !BEAST.DEAD ) {
+				let position = { //our current position
+					x: BEAST.HERO.x,
+					y: BEAST.HERO.y,
+				};
+				position[ dir ] += step; //move
 
-			if( !_isOutOfBounds( position ) ) { //check to stay within bounds
-				let _isPushable = push( dir, step );
+				if( !_isOutOfBounds( position ) ) {    //check to stay within bounds
+					let _isPushable = push( dir, step ); //can we even push?
 
-				if( _isPushable ) {
-					BEAST.BOARD[ BEAST.HERO.y ][ BEAST.HERO.x ] = undefined; //clear old position
-					BEAST.HERO = position; //update global position
+					if( _isPushable ) {
+						BEAST.BOARD[ BEAST.HERO.y ][ BEAST.HERO.x ] = undefined; //clear old position
+						BEAST.HERO = position; //update global position
 
-					if( _isOutOfBounds( BEAST.HERO ) ) { //check to stay within bounds
-						BEAST.HERO[ dir ] -= step; //reset move
+						BEAST.BOARD[ BEAST.HERO.y ][ BEAST.HERO.x ] = 'hero'; //set new position
+
+						BEAST.draw.board(); //now draw it up
 					}
-
-					BEAST.BOARD[ BEAST.HERO.y ][ BEAST.HERO.x ] = 'hero'; //set new position
-
-					BEAST.draw.board();
 				}
 			}
+		},
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Public function
+// die, Hero dies
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+		die: ( ) => {
+			BEAST.debugging.report(`hero: running die`, 1);
+
+			BEAST.DEATHS ++;
+			BEAST.DEAD = true;
+
+			BEAST.draw.message('You died :`(');
+
+			setTimeout(() => {
+				BEAST.DEAD = false;
+				BEAST.scaffolding.init();
+				BEAST.draw.init();
+			}, 3000);
 		},
 	}
 })();

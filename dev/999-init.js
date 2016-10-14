@@ -88,6 +88,7 @@ BEAST.init = () => {
 
 	process.on("SIGWINCH", () => { //redraw frame and board on terminal resize
 		BEAST.draw.frame();
+		BEAST.draw.score();
 		BEAST.draw.board();
 	});
 
@@ -95,16 +96,16 @@ BEAST.init = () => {
 		BEAST.RL.clearLine();
 
 		if( key.name === 'right' ) {
-			BEAST.move.hero( 'x', 1 );
+			BEAST.hero.move( 'x', 1 );
 		}
 		else if( key.name === 'left' ) {
-			BEAST.move.hero( 'x', -1 );
+			BEAST.hero.move( 'x', -1 );
 		}
 		else if( key.name === 'up' ) {
-			BEAST.move.hero( 'y', -1 );
+			BEAST.hero.move( 'y', -1 );
 		}
 		else if( key.name === 'down' ) {
-			BEAST.move.hero( 'y', 1 );
+			BEAST.hero.move( 'y', 1 );
 		}
 		else {
 			return;

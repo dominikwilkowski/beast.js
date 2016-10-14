@@ -33,35 +33,40 @@ const BEAST = (() => { //constructor factory
 		DEBUG: [Debug], //debug settings
 		DEBUGLEVEL: 2,  //debug level setting
 		MINWIDTH: 120,  //width of the game canvas
-		MINHEIGHT: 40,  //height of the game canvas
+		MINHEIGHT: 40,  //height of the game canvas (reuse in BEAST.HERO.y)
 		BOARD: [],      //the board representation in integers
-		HERO: {        //the start position of the player
+		START: {         //the start position of the player, the beasts start on the opposite end
 			x: 1,         //left aligned
 			y: (40 - 8),  //we take MINHEIGHT - 8 to get to the bottom
 		},
+		HERO: {},       //position tracking for our hero
+		DEAD: false,    //when the hero dies he/she can't move no more
+		BEASTS: {},     //position tracking for all beasts
+		LIVES: 4,       //how many lives do we have?
+		DEATHS: 0,      //how many times have we died so far?
 		LEVEL: 1,       //the current level (we start with 1 duh)
 		LEVELS: {       //the amount of elements per level
 			1: {          //start easy
 				beast: 10,
-				block: 200,
-				solid: 10,
+				block: 400,
+				solid: 50,
 			},
 			2: {          //increase beasts and solids, decrease blocks
 				beast: 30,
-				block: 150,
-				solid: 50,
+				block: 250,
+				solid: 200,
 			},
 			3: {          //increase beasts and solids, decrease blocks
 				beast: 50,
 				block: 100,
-				solid: 100,
+				solid: 500,
 			},
 		},
 		SYMBOLS: {      //symbols for element
-			hero: Chalk.cyan('¶'),
-			beast: 'Θ',
-			block: '░',
-			solid: '▓',
+			hero: Chalk.cyan('¶'), //█
+			beast: Chalk.green('Θ'),
+			block: Chalk.gray('▓'),
+			solid: Chalk.white('▓'),
 		},
 		RL: {},         //The readline object for reuse in all modules
 

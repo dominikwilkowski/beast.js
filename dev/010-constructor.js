@@ -32,10 +32,10 @@ const BEAST = (() => { //constructor factory
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		DEBUG: [Debug], //debug settings
 		DEBUGLEVEL: 2,  //debug level setting
-		MINWIDTH: 120,  //width of the game canvas
+		MINWIDTH: 100,  //width of the game canvas
 		MINHEIGHT: 40,  //height of the game canvas (reuse in BEAST.HERO.y)
 		BOARD: [],      //the board representation in integers
-		START: {         //the start position of the player, the beasts start on the opposite end
+		START: {        //the start position of the player, the beasts start on the right top corner
 			x: 1,         //left aligned
 			y: (40 - 8),  //we take MINHEIGHT - 8 to get to the bottom
 		},
@@ -63,8 +63,8 @@ const BEAST = (() => { //constructor factory
 			},
 		},
 		SYMBOLS: {      //symbols for element
-			hero: Chalk.cyan('¶'), //█
-			beast: Chalk.green('Θ'),
+			hero: Chalk.cyan('¶'),
+			beast: Chalk.green('Φ'),
 			block: Chalk.gray('▓'),
 			solid: Chalk.white('▓'),
 		},

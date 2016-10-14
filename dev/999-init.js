@@ -86,11 +86,13 @@ BEAST.init = () => {
 		process.stdin.setRawMode( true );
 	}
 
+
 	process.on("SIGWINCH", () => { //redraw frame and board on terminal resize
 		BEAST.draw.frame();
 		BEAST.draw.score();
 		BEAST.draw.board();
 	});
+
 
 	process.stdin.on("keypress", (chunk, key) => { //redraw frame and board on terminal resize
 		BEAST.RL.clearLine();
@@ -111,6 +113,19 @@ BEAST.init = () => {
 			return;
 		}
 	});
+
+
+	// BEAST.RL.on("close", () => { //redraw frame and board on terminal resize
+	// 	customStdout.muted = false;
+
+	// 	Readline.cursorTo( BEAST.RL, 0, 0 ); //go to top of board
+	// 	Readline.clearScreenDown( BEAST.RL ); //clear screen
+
+	// 	console.log(`\n   Good bye\n`);
+
+	// 	process.exit(0);
+	// });
+
 
 	BEAST.scaffolding.init();
 	BEAST.draw.init();

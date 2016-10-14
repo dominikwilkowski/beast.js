@@ -70,6 +70,7 @@ BEAST.scaffolding = (() => {
 			BEAST.debugging.report(`scaffolding: running beasts`, 1);
 
 			let beasts = 0; //keep track of the beasts we distribute
+			BEAST.BEASTS = [];
 
 			while( beasts < BEAST.LEVELS[ BEAST.LEVEL ]['beast'] ) {
 				let randomX = Math.floor( Math.random() * ((BEAST.MINWIDTH - 2) - ( BEAST.MINWIDTH / 2 )) + ( BEAST.MINWIDTH / 2 ) );

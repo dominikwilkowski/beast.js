@@ -150,9 +150,10 @@ BEAST.draw = (() => {
 // Public function
 // message, Drawing a message in the center of the screen
 //
-// @param  message  {string}  The string to be written to the screen
+// @param  message  {string}   The string to be written to the screen
+// @param  color    {keyword}  The color of the message, Default: black
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
-		message: ( message ) => {
+		message: ( message, color = 'black' ) => {
 			customStdout.muted = false; //allow output so we can draw
 
 			let top = Math.floor( ( CliSize().rows - BEAST.MINHEIGHT ) / 2 );
@@ -161,10 +162,10 @@ BEAST.draw = (() => {
 			let spaceLeft = Math.floor( ( CliSize().columns - BEAST.MINWIDTH ) / 2 ); //space left from frame
 			spaceLeft = ' '.repeat( spaceLeft );
 
-			let spaceCenter = Math.floor( ( (BEAST.MINWIDTH - 2) / 2 ) - ( message.length / 2 ) );
+			let spaceCenter = Math.floor( ( (BEAST.MINWIDTH - 2) / 2 ) - ( (message.length + 2) / 2 ) );
 
 			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
-			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( spaceCenter )}${message}${' '.repeat( spaceCenter )}\n`);
+			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( spaceCenter )}${Chalk[ color ].bgWhite.bold(` ${message} `)}${' '.repeat( spaceCenter )}\n`);
 			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
 
 			Readline.cursorTo( BEAST.RL, 0, (CliSize().rows - 1) ); //go to bottom of board and rest cursor there

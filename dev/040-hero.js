@@ -101,7 +101,15 @@ BEAST.hero = (() => {
 				element === 'block' && pushBeast || //now we got a block right after a beast = squash it!
 				element === 'solid' && pushBeast //a solid after a beast = squash it too
 			) {
-				if( elements[0] !== 'solid' ) {
+
+				let previousSolids = false; //
+				for(let i = elements.length - 2; i >= 0; i--) { //have we got any solids in the elements we are pushing?
+					if( elements[i] === 'solid' ) {
+						previousSolids = true;
+					}
+				};
+
+				if( !previousSolids ) { //can't move this if you are trying to push solids
 					canMove = true; //even though there is a beast in the way we can totally squash it
 				}
 
@@ -179,13 +187,23 @@ BEAST.hero = (() => {
 			BEAST.DEATHS ++;
 			BEAST.DEAD = true;
 
-			BEAST.draw.message('You died :`(');
+			if( BEAST.DEATHS === BEAST.LIVES ) { //no more lives left
+				BEAST.draw.message('GAME OVER...'); //sorry :`(
 
-			setTimeout(() => {
-				BEAST.DEAD = false;
-				BEAST.scaffolding.init();
-				BEAST.draw.init();
-			}, 3000);
+				setTimeout(() => {
+					process.exit(0); //exit without error
+				}, 2000);
+			}
+			else {
+				BEAST.draw.message('You were eaten by a beast :`(');
+
+				setTimeout(() => { //restart with level 1
+					BEAST.LEVEL = 1;
+					BEAST.DEAD = false;
+					BEAST.scaffolding.init();
+					BEAST.draw.init();
+				}, 3000);
+			}
 		},
 	}
 })();

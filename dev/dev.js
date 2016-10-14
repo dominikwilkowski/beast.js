@@ -32,10 +32,10 @@ const BEAST = (() => { //constructor factory
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		DEBUG: true, //debug settings
 		DEBUGLEVEL: 2,  //debug level setting
-		MINWIDTH: 120,  //width of the game canvas
+		MINWIDTH: 100,  //width of the game canvas
 		MINHEIGHT: 40,  //height of the game canvas (reuse in BEAST.HERO.y)
 		BOARD: [],      //the board representation in integers
-		START: {         //the start position of the player, the beasts start on the opposite end
+		START: {        //the start position of the player, the beasts start on the right top corner
 			x: 1,         //left aligned
 			y: (40 - 8),  //we take MINHEIGHT - 8 to get to the bottom
 		},
@@ -63,8 +63,8 @@ const BEAST = (() => { //constructor factory
 			},
 		},
 		SYMBOLS: {      //symbols for element
-			hero: Chalk.cyan('¶'), //█
-			beast: Chalk.green('Θ'),
+			hero: Chalk.cyan('¶'),
+			beast: Chalk.green('Φ'),
 			block: Chalk.gray('▓'),
 			solid: Chalk.white('▓'),
 		},
@@ -223,6 +223,7 @@ BEAST.scaffolding = (() => {
 			BEAST.debugging.report(`scaffolding: running beasts`, 1);
 
 			let beasts = 0; //keep track of the beasts we distribute
+			BEAST.BEASTS = [];
 
 			while( beasts < BEAST.LEVELS[ BEAST.LEVEL ]['beast'] ) {
 				let randomX = Math.floor( Math.random() * ((BEAST.MINWIDTH - 2) - ( BEAST.MINWIDTH / 2 )) + ( BEAST.MINWIDTH / 2 ) );
@@ -431,9 +432,10 @@ BEAST.draw = (() => {
 // Public function
 // message, Drawing a message in the center of the screen
 //
-// @param  message  {string}  The string to be written to the screen
+// @param  message  {string}   The string to be written to the screen
+// @param  color    {keyword}  The color of the message, Default: black
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
-		message: ( message ) => {
+		message: ( message, color = 'black' ) => {
 			customStdout.muted = false; //allow output so we can draw
 
 			let top = Math.floor( ( CliSize().rows - BEAST.MINHEIGHT ) / 2 );
@@ -442,10 +444,10 @@ BEAST.draw = (() => {
 			let spaceLeft = Math.floor( ( CliSize().columns - BEAST.MINWIDTH ) / 2 ); //space left from frame
 			spaceLeft = ' '.repeat( spaceLeft );
 
-			let spaceCenter = Math.floor( ( (BEAST.MINWIDTH - 2) / 2 ) - ( message.length / 2 ) );
+			let spaceCenter = Math.floor( ( (BEAST.MINWIDTH - 2) / 2 ) - ( (message.length + 2) / 2 ) );
 
 			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
-			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( spaceCenter )}${message}${' '.repeat( spaceCenter )}\n`);
+			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( spaceCenter )}${Chalk[ color ].bgWhite.bold(` ${message} `)}${' '.repeat( spaceCenter )}\n`);
 			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
 
 			Readline.cursorTo( BEAST.RL, 0, (CliSize().rows - 1) ); //go to bottom of board and rest cursor there
@@ -570,7 +572,15 @@ BEAST.hero = (() => {
 				element === 'block' && pushBeast || //now we got a block right after a beast = squash it!
 				element === 'solid' && pushBeast //a solid after a beast = squash it too
 			) {
-				if( elements[0] !== 'solid' ) {
+
+				let previousSolids = false; //
+				for(let i = elements.length - 2; i >= 0; i--) { //have we got any solids in the elements we are pushing?
+					if( elements[i] === 'solid' ) {
+						previousSolids = true;
+					}
+				};
+
+				if( !previousSolids ) { //can't move this if you are trying to push solids
 					canMove = true; //even though there is a beast in the way we can totally squash it
 				}
 
@@ -648,13 +658,23 @@ BEAST.hero = (() => {
 			BEAST.DEATHS ++;
 			BEAST.DEAD = true;
 
-			BEAST.draw.message('You died :`(');
+			if( BEAST.DEATHS === BEAST.LIVES ) { //no more lives left
+				BEAST.draw.message('GAME OVER...'); //sorry :`(
 
-			setTimeout(() => {
-				BEAST.DEAD = false;
-				BEAST.scaffolding.init();
-				BEAST.draw.init();
-			}, 3000);
+				setTimeout(() => {
+					process.exit(0); //exit without error
+				}, 2000);
+			}
+			else {
+				BEAST.draw.message('You were eaten by a beast :`(');
+
+				setTimeout(() => { //restart with level 1
+					BEAST.LEVEL = 1;
+					BEAST.DEAD = false;
+					BEAST.scaffolding.init();
+					BEAST.draw.init();
+				}, 3000);
+			}
 		},
 	}
 })();
@@ -691,7 +711,34 @@ BEAST.beasts = (() => {
 
 			//disable interval for movement
 
-			BEAST.draw.score(); //draw the score again as it just changed!
+			if( Object.keys( BEAST.BEASTS ).length === 0 ) { //no more beasts! The hero wins
+				BEAST.DEAD = true; //disable controls
+				BEAST.LEVEL ++; //increase level
+
+				if( BEAST.LEVEL > Object.keys( BEAST.LEVELS ).length ) { //won last level
+					setTimeout(() => {
+						BEAST.draw.message( '!! YOU WIN THE GAME !!', 'magenta' );
+
+						setTimeout(() => {
+							process.exit(0); //exit without error
+						}, 2000);
+					}, 300);
+				}
+				else { //win mid levels
+					setTimeout(() => {
+						BEAST.draw.message( `YOU WIN LEVEL ${(BEAST.LEVEL - 1)}!`, 'magenta' );
+
+						setTimeout(() => { //next level
+							BEAST.DEAD = false;
+							BEAST.scaffolding.init();
+							BEAST.draw.init();
+						}, 3000);
+					}, 300);
+				}
+			}
+			else {
+				BEAST.draw.score(); //draw the score again as it just changed!
+			}
 		},
 
 
@@ -794,11 +841,13 @@ BEAST.init = () => {
 		process.stdin.setRawMode( true );
 	}
 
+
 	process.on("SIGWINCH", () => { //redraw frame and board on terminal resize
 		BEAST.draw.frame();
 		BEAST.draw.score();
 		BEAST.draw.board();
 	});
+
 
 	process.stdin.on("keypress", (chunk, key) => { //redraw frame and board on terminal resize
 		BEAST.RL.clearLine();
@@ -819,6 +868,19 @@ BEAST.init = () => {
 			return;
 		}
 	});
+
+
+	// BEAST.RL.on("close", () => { //redraw frame and board on terminal resize
+	// 	customStdout.muted = false;
+
+	// 	Readline.cursorTo( BEAST.RL, 0, 0 ); //go to top of board
+	// 	Readline.clearScreenDown( BEAST.RL ); //clear screen
+
+	// 	console.log(`\n   Good bye\n`);
+
+	// 	process.exit(0);
+	// });
+
 
 	BEAST.scaffolding.init();
 	BEAST.draw.init();

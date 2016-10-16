@@ -46,8 +46,8 @@
 		"pretty"
 	],
 	"main": "prod/index.js",
-	"bin": {
-		"beast": "./prod/index.js"
+	"scripts": {
+		"start": "node ./prod/index.js"
 	},
 	"licenses": [
 		{

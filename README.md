@@ -7,7 +7,7 @@
 ![The beast game](https://raw.githubusercontent.com/dominikwilkowski/beast.js/master/assets/play.gif)
 
 > BEAST.js is an homage to the 1984 ASCII game "[BEAST](https://en.wikipedia.org/wiki/Beast_(video_game))" from Dan Baker, Alan Brown, Mark Hamilton and
-> Derrick Shadel written in node
+> Derrick Shadel written in node.
 
 # Beast.js
 
@@ -42,7 +42,7 @@ npm start
 
 ## How to play
 
-The goal is to squash all beasts in each level. To squash a beast between two or more blocks.
+The goal is to squash all beasts in each level. To squash a beast between two or more blocks. Press `q` to quit.
 
 
 ## Contributing

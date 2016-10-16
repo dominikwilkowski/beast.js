@@ -47,19 +47,22 @@ const BEAST = (() => { //constructor factory
 		LEVEL: 1,       //the current level (we start with 1 duh)
 		LEVELS: {       //the amount of elements per level
 			1: {          //start easy
-				beast: 10,
-				block: 400,
+				beast: 1,
+				block: 600,
 				solid: 50,
+				speed: 1000,
 			},
 			2: {          //increase beasts and solids, decrease blocks
-				beast: 30,
-				block: 250,
+				beast: 3,
+				block: 350,
 				solid: 200,
+				speed: 1000,
 			},
-			3: {          //increase beasts and solids, decrease blocks
-				beast: 50,
+			3: {          //increase beasts and solids, decrease blocks and speed
+				beast: 10,
 				block: 100,
 				solid: 500,
+				speed: 500,
 			},
 		},
 		SYMBOLS: {      //symbols for element
@@ -68,7 +71,8 @@ const BEAST = (() => { //constructor factory
 			block: Chalk.gray('▓'),
 			solid: Chalk.white('▓'),
 		},
-		RL: {},         //The readline object for reuse in all modules
+		RL: {},         //the readline object for reuse in all modules
+		INTERVAL: {},   //the interval object to clear or set the beast walking interval on
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -176,7 +180,7 @@ BEAST.scaffolding = (() => {
 // init, Scaffold the canvas
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		init: () => {
-			BEAST.debugging.report(`scaffolding: running init`, 1);
+			BEAST.debugging.report(`scaffolding: init`, 1);
 
 			BEAST.HERO = {
 				x: BEAST.START.x,
@@ -187,7 +191,7 @@ BEAST.scaffolding = (() => {
 			BEAST.scaffolding.beasts();            //add beasts
 			BEAST.scaffolding.element( 'block' );  //add blocks to BEAST.BOARD
 			BEAST.scaffolding.element( 'solid' );  //add solids to BEAST.BOARD
-			BEAST.scaffolding.hero();              //last but not least we need the hero in BEAST.BOARD
+			BEAST.scaffolding.hero();              //last but not least we need the hero
 		},
 
 
@@ -196,7 +200,7 @@ BEAST.scaffolding = (() => {
 // cords, Scaffold the coordinates for the board
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		cords: () => {
-			BEAST.debugging.report(`scaffolding: running cords`, 1);
+			BEAST.debugging.report(`scaffolding: cords`, 1);
 
 			for(let i = 0; i < ( BEAST.MINHEIGHT - 7 ); i++) {
 				BEAST.BOARD[ i ] = []; //add array per row
@@ -209,7 +213,7 @@ BEAST.scaffolding = (() => {
 // hero, Scaffold the hero onto the board
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		hero: () => {
-			BEAST.debugging.report(`scaffolding: running hero`, 1);
+			BEAST.debugging.report(`scaffolding: hero`, 1);
 
 			BEAST.BOARD[ BEAST.HERO.y ][ BEAST.HERO.x ] = 'hero' //add the hero his/her starting position
 		},
@@ -220,7 +224,7 @@ BEAST.scaffolding = (() => {
 // beasts, Scaffold beasts onto the board
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		beasts: () => {
-			BEAST.debugging.report(`scaffolding: running beasts`, 1);
+			BEAST.debugging.report(`scaffolding: beasts`, 1);
 
 			let beasts = 0; //keep track of the beasts we distribute
 			BEAST.BEASTS = [];
@@ -232,7 +236,7 @@ BEAST.scaffolding = (() => {
 				if( BEAST.BOARD[ randomY ][ randomX ] === undefined ) { //no other elements on the spot
 					BEAST.BOARD[ randomY ][ randomX ] = 'beast'; //adding beast onto board
 
-					BEAST.BEASTS[`${randomX}x${randomY}`] = { //adding beast to beast registry
+					BEAST.BEASTS[`${randomX}-${randomY}`] = { //adding beast to beast registry
 						x: randomX,
 						y: randomY,
 					}
@@ -250,7 +254,7 @@ BEAST.scaffolding = (() => {
 // @param  element  {keyword}  We can only scaffold 'beast', 'block', 'solid'
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		element: ( element ) => {
-			BEAST.debugging.report(`scaffolding: running blocks`, 1);
+			BEAST.debugging.report(`scaffolding: blocks`, 1);
 
 			let count = 0; //keep track of elements we distribute
 
@@ -306,7 +310,7 @@ BEAST.draw = (() => {
 // @param  item  {string}  The string to be written
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 	const printLine = ( item ) => {
-		BEAST.debugging.report(`draw: running printLine`, 1);
+		BEAST.debugging.report(`draw: printLine`, 1);
 
 		//testing screen size and just printing on error
 		let error = BEAST.checkSize();
@@ -405,11 +409,11 @@ BEAST.draw = (() => {
 			let top = Math.floor( ( CliSize().rows - BEAST.MINHEIGHT ) / 2 );
 			Readline.cursorTo( BEAST.RL, 0, (top + 4) ); //go to top of board
 
-			for(let boardLine of BEAST.BOARD) { //iterate over each row
+			for(let boardRow of BEAST.BOARD) { //iterate over each row
 				let line = ''; //translate BEAST.BOARD to ASCII
 
 				for(let x = 0; x < ( BEAST.MINWIDTH - 2 ); x++) { //iterate over each column in this row
-					let element = BEAST.SYMBOLS[ boardLine[ x ] ]; //get the symbol for the element we found
+					let element = BEAST.SYMBOLS[ boardRow[ x ] ]; //get the symbol for the element we found
 
 					if( element ) { //if there was an element found
 						line += element;
@@ -433,22 +437,25 @@ BEAST.draw = (() => {
 // message, Drawing a message in the center of the screen
 //
 // @param  message  {string}   The string to be written to the screen
-// @param  color    {keyword}  The color of the message, Default: black
+// @param  color    {keyword}  The color of the message, Default: black, optional
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		message: ( message, color = 'black' ) => {
 			customStdout.muted = false; //allow output so we can draw
 
 			let top = Math.floor( ( CliSize().rows - BEAST.MINHEIGHT ) / 2 );
-			Readline.cursorTo( BEAST.RL, 0, (top + 4 + Math.floor( ( BEAST.MINHEIGHT - 7 ) / 2 ) - 1) ); //go to middle of board
+			Readline.cursorTo( BEAST.RL, 0, (top + 4 + Math.floor( ( BEAST.MINHEIGHT - 7 ) / 2 ) - 2) ); //go to middle of board
 
-			let spaceLeft = Math.floor( ( CliSize().columns - BEAST.MINWIDTH ) / 2 ); //space left from frame
-			spaceLeft = ' '.repeat( spaceLeft );
+			let spaceShoulder = Math.floor( ( CliSize().columns - BEAST.MINWIDTH ) / 2 ); //space left from frame
+			spaceShoulder = ' '.repeat( spaceShoulder );
 
-			let spaceCenter = Math.floor( ( (BEAST.MINWIDTH - 2) / 2 ) - ( (message.length + 2) / 2 ) );
+			let spaceLeft = Math.floor( ( (BEAST.MINWIDTH - 2) / 2 ) - ( (message.length + 2) / 2 ) );
+			let spaceRight = Math.ceil( ( (BEAST.MINWIDTH - 2) / 2 ) - ( (message.length + 2) / 2 ) );
 
-			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
-			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( spaceCenter )}${Chalk[ color ].bgWhite.bold(` ${message} `)}${' '.repeat( spaceCenter )}\n`);
-			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
+			BEAST.RL.write(`${spaceShoulder}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
+			BEAST.RL.write(`${spaceShoulder}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
+			BEAST.RL.write(`${spaceShoulder}${Chalk.gray(`│`)}${' '.repeat( spaceLeft )}${Chalk[ color ].bgWhite.bold(` ${message} `)}${' '.repeat( spaceRight )}\n`);
+			BEAST.RL.write(`${spaceShoulder}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
+			BEAST.RL.write(`${spaceShoulder}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
 
 			Readline.cursorTo( BEAST.RL, 0, (CliSize().rows - 1) ); //go to bottom of board and rest cursor there
 
@@ -497,7 +504,7 @@ BEAST.hero = (() => {
 // @return           {boolean}  True or false
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 	const _isOutOfBounds = ( position ) => {
-		BEAST.debugging.report(`hero: running _isOutOfBounds`, 1);
+		BEAST.debugging.report(`hero: _isOutOfBounds`, 1);
 
 		let outofbounds = false; //let's assume the best
 
@@ -523,7 +530,7 @@ BEAST.hero = (() => {
 // @return           {boolean}  True or false
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 	const push = ( dir, step ) => {
-		BEAST.debugging.report(`hero: running push`, 1);
+		BEAST.debugging.report(`hero: push`, 1);
 
 		let element = '';
 		let canMove = true;
@@ -623,7 +630,7 @@ BEAST.hero = (() => {
 // @param  step  {integer}  The increment of the movement. 1 = move right, -1 = move left
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		move: ( dir, step ) => {
-			BEAST.debugging.report(`hero: running move`, 1);
+			BEAST.debugging.report(`hero: move`, 1);
 
 			if( !BEAST.DEAD ) {
 				let position = { //our current position
@@ -653,7 +660,7 @@ BEAST.hero = (() => {
 // die, Hero dies
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		die: ( ) => {
-			BEAST.debugging.report(`hero: running die`, 1);
+			BEAST.debugging.report(`hero: die`, 1);
 
 			BEAST.DEATHS ++;
 			BEAST.DEAD = true;
@@ -673,6 +680,7 @@ BEAST.hero = (() => {
 					BEAST.DEAD = false;
 					BEAST.scaffolding.init();
 					BEAST.draw.init();
+					BEAST.beasts.init();
 				}, 3000);
 			}
 		},
@@ -682,7 +690,7 @@ BEAST.hero = (() => {
  *
  * Beasts
  *
- * Breathing live into beasts, making them move and killing them off too
+ * Breathing live into beasts, making them move, seek, kill and mortal
  *
  **************************************************************************************************************************************************************/
 
@@ -690,6 +698,7 @@ BEAST.hero = (() => {
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Dependencies
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
+const PF = require('pathfinding');
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -697,7 +706,83 @@ BEAST.hero = (() => {
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 BEAST.beasts = (() => {
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Private function
+// portBoard, Convert current board into an array the pathfinding library can understand
+//
+// @return  {array}  The presentation of the board in 0 and 1
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+	const portBoard = ( position ) => {
+		BEAST.debugging.report(`beasts: portBoard`, 1);
+
+		let i = 0;
+		let newBoard = []; //we assume always the best
+
+		for(let boardRow of BEAST.BOARD) { //iterate over each row
+			newBoard[ i ] = []; //add a row
+
+			for(let x = 0; x < ( BEAST.MINWIDTH - 2 ); x++) { //iterate over each cell in this row
+				let cell = boardRow[ x ];
+
+				if( cell === undefined || cell === 'hero' ) {
+					newBoard[ i ].push( 0 ); //add the cell as walkable
+				}
+				else {
+					newBoard[ i ].push( 1 ); //add the cell as not walkable
+				}
+			}
+
+			i ++;
+		}
+
+		return newBoard;
+	}
+
+
 	return {
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Public function
+// walk, Make all beasts walk
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+		walk: () => {
+			BEAST.debugging.report(`beasts: walk`, 1);
+
+			let finder = new PF.AStarFinder({
+				allowDiagonal: true,
+			});
+
+			//iterate beasts
+			for( let beast in BEAST.BEASTS ) {
+				beast = BEAST.BEASTS[ beast ];
+				let board = portBoard(); //we have to port the board to an binary multi dimensional array for the pathfinding library
+				let grid = new PF.Grid( board );
+				let path = finder.findPath(beast.x, beast.y, BEAST.HERO.x, BEAST.HERO.y, grid);
+
+				if( path[1] !== undefined ) { //if there is no path then just stand still
+					delete BEAST.BEASTS[`${beast.x}-${beast.y}`]; //delete this beast from the registry
+					BEAST.BOARD[ beast.y ][ beast.x ] = undefined; //empty the spot this beast was in
+
+					BEAST.BEASTS[`${path[1][0]}-${path[1][1]}`] = { //add it back in with updated key and coordinates
+						x: path[1][0],
+						y: path[1][1],
+					};
+					BEAST.BOARD[ path[1][1] ][ path[1][0] ] = 'beast'; //add the best to the new position
+
+					BEAST.draw.board();
+
+					if( path[1][0] === BEAST.HERO.x && path[1][1] === BEAST.HERO.y ) {
+						clearInterval( BEAST.INTERVAL ); //first no more movements
+						BEAST.hero.die(); //you dead
+
+						break; //no more beasts movements necessary
+					}
+				}
+			}
+
+		},
+
+
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Public function
 // squash, Squash a beast
@@ -707,13 +792,13 @@ BEAST.beasts = (() => {
 		squash: ( position ) => {
 			BEAST.debugging.report(`beasts: squash`, 1);
 
-			delete BEAST.BEASTS[`${position.x}x${position.y}`]; //delete beast from the registry
-
-			//disable interval for movement
+			delete BEAST.BEASTS[`${position.x}-${position.y}`]; //delete beast from the registry
 
 			if( Object.keys( BEAST.BEASTS ).length === 0 ) { //no more beasts! The hero wins
 				BEAST.DEAD = true; //disable controls
 				BEAST.LEVEL ++; //increase level
+
+				clearInterval( BEAST.INTERVAL ); //disable interval for movement
 
 				if( BEAST.LEVEL > Object.keys( BEAST.LEVELS ).length ) { //won last level
 					setTimeout(() => {
@@ -732,6 +817,7 @@ BEAST.beasts = (() => {
 							BEAST.DEAD = false;
 							BEAST.scaffolding.init();
 							BEAST.draw.init();
+							BEAST.beasts.init();
 						}, 3000);
 					}, 300);
 				}
@@ -749,7 +835,11 @@ BEAST.beasts = (() => {
 		init: () => {
 			BEAST.debugging.report(`beasts: init`, 1);
 
-			//
+			clearInterval( BEAST.INTERVAL ); //clear any intervals to avoid doubling up
+
+			BEAST.INTERVAL = setInterval(() => { //set the interval in which the beasts move
+				BEAST.beasts.walk();
+			}, BEAST.LEVELS[ BEAST.LEVEL ].speed );
 		},
 	}
 })();
@@ -864,6 +954,9 @@ BEAST.init = () => {
 		else if( key.name === 'down' ) {
 			BEAST.hero.move( 'y', 1 );
 		}
+		else if( key.name === 'q' ) {
+			process.exit(0);
+		}
 		else {
 			return;
 		}
@@ -884,6 +977,7 @@ BEAST.init = () => {
 
 	BEAST.scaffolding.init();
 	BEAST.draw.init();
+	BEAST.beasts.init();
 };
 
 

@@ -24,7 +24,7 @@ BEAST.draw = (() => {
 // @param  item  {string}  The string to be written
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 	const printLine = ( item ) => {
-		BEAST.debugging.report(`draw: running printLine`, 1);
+		BEAST.debugging.report(`draw: printLine`, 1);
 
 		//testing screen size and just printing on error
 		let error = BEAST.checkSize();
@@ -123,11 +123,11 @@ BEAST.draw = (() => {
 			let top = Math.floor( ( CliSize().rows - BEAST.MINHEIGHT ) / 2 );
 			Readline.cursorTo( BEAST.RL, 0, (top + 4) ); //go to top of board
 
-			for(let boardLine of BEAST.BOARD) { //iterate over each row
+			for(let boardRow of BEAST.BOARD) { //iterate over each row
 				let line = ''; //translate BEAST.BOARD to ASCII
 
 				for(let x = 0; x < ( BEAST.MINWIDTH - 2 ); x++) { //iterate over each column in this row
-					let element = BEAST.SYMBOLS[ boardLine[ x ] ]; //get the symbol for the element we found
+					let element = BEAST.SYMBOLS[ boardRow[ x ] ]; //get the symbol for the element we found
 
 					if( element ) { //if there was an element found
 						line += element;
@@ -151,22 +151,25 @@ BEAST.draw = (() => {
 // message, Drawing a message in the center of the screen
 //
 // @param  message  {string}   The string to be written to the screen
-// @param  color    {keyword}  The color of the message, Default: black
+// @param  color    {keyword}  The color of the message, Default: black, optional
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		message: ( message, color = 'black' ) => {
 			customStdout.muted = false; //allow output so we can draw
 
 			let top = Math.floor( ( CliSize().rows - BEAST.MINHEIGHT ) / 2 );
-			Readline.cursorTo( BEAST.RL, 0, (top + 4 + Math.floor( ( BEAST.MINHEIGHT - 7 ) / 2 ) - 1) ); //go to middle of board
+			Readline.cursorTo( BEAST.RL, 0, (top + 4 + Math.floor( ( BEAST.MINHEIGHT - 7 ) / 2 ) - 2) ); //go to middle of board
 
-			let spaceLeft = Math.floor( ( CliSize().columns - BEAST.MINWIDTH ) / 2 ); //space left from frame
-			spaceLeft = ' '.repeat( spaceLeft );
+			let spaceShoulder = Math.floor( ( CliSize().columns - BEAST.MINWIDTH ) / 2 ); //space left from frame
+			spaceShoulder = ' '.repeat( spaceShoulder );
 
-			let spaceCenter = Math.floor( ( (BEAST.MINWIDTH - 2) / 2 ) - ( (message.length + 2) / 2 ) );
+			let spaceLeft = Math.floor( ( (BEAST.MINWIDTH - 2) / 2 ) - ( (message.length + 2) / 2 ) );
+			let spaceRight = Math.ceil( ( (BEAST.MINWIDTH - 2) / 2 ) - ( (message.length + 2) / 2 ) );
 
-			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
-			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( spaceCenter )}${Chalk[ color ].bgWhite.bold(` ${message} `)}${' '.repeat( spaceCenter )}\n`);
-			BEAST.RL.write(`${spaceLeft}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
+			BEAST.RL.write(`${spaceShoulder}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
+			BEAST.RL.write(`${spaceShoulder}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
+			BEAST.RL.write(`${spaceShoulder}${Chalk.gray(`│`)}${' '.repeat( spaceLeft )}${Chalk[ color ].bgWhite.bold(` ${message} `)}${' '.repeat( spaceRight )}\n`);
+			BEAST.RL.write(`${spaceShoulder}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
+			BEAST.RL.write(`${spaceShoulder}${Chalk.gray(`│`)}${' '.repeat( BEAST.MINWIDTH - 2 )}\n`);
 
 			Readline.cursorTo( BEAST.RL, 0, (CliSize().rows - 1) ); //go to bottom of board and rest cursor there
 

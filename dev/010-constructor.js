@@ -47,19 +47,22 @@ const BEAST = (() => { //constructor factory
 		LEVEL: 1,       //the current level (we start with 1 duh)
 		LEVELS: {       //the amount of elements per level
 			1: {          //start easy
-				beast: 10,
-				block: 400,
+				beast: 1,
+				block: 600,
 				solid: 50,
+				speed: 1000,
 			},
 			2: {          //increase beasts and solids, decrease blocks
-				beast: 30,
-				block: 250,
+				beast: 3,
+				block: 350,
 				solid: 200,
+				speed: 1000,
 			},
-			3: {          //increase beasts and solids, decrease blocks
-				beast: 50,
+			3: {          //increase beasts and solids, decrease blocks and speed
+				beast: 10,
 				block: 100,
 				solid: 500,
+				speed: 500,
 			},
 		},
 		SYMBOLS: {      //symbols for element
@@ -68,7 +71,8 @@ const BEAST = (() => { //constructor factory
 			block: Chalk.gray('▓'),
 			solid: Chalk.white('▓'),
 		},
-		RL: {},         //The readline object for reuse in all modules
+		RL: {},         //the readline object for reuse in all modules
+		INTERVAL: {},   //the interval object to clear or set the beast walking interval on
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------

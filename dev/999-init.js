@@ -109,6 +109,9 @@ BEAST.init = () => {
 		else if( key.name === 'down' ) {
 			BEAST.hero.move( 'y', 1 );
 		}
+		else if( key.name === 'q' ) {
+			process.exit(0);
+		}
 		else {
 			return;
 		}
@@ -129,6 +132,7 @@ BEAST.init = () => {
 
 	BEAST.scaffolding.init();
 	BEAST.draw.init();
+	BEAST.beasts.init();
 };
 
 

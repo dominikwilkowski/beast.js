@@ -26,7 +26,7 @@ BEAST.hero = (() => {
 // @return           {boolean}  True or false
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 	const _isOutOfBounds = ( position ) => {
-		BEAST.debugging.report(`hero: running _isOutOfBounds`, 1);
+		BEAST.debugging.report(`hero: _isOutOfBounds`, 1);
 
 		let outofbounds = false; //let's assume the best
 
@@ -52,7 +52,7 @@ BEAST.hero = (() => {
 // @return           {boolean}  True or false
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 	const push = ( dir, step ) => {
-		BEAST.debugging.report(`hero: running push`, 1);
+		BEAST.debugging.report(`hero: push`, 1);
 
 		let element = '';
 		let canMove = true;
@@ -152,7 +152,7 @@ BEAST.hero = (() => {
 // @param  step  {integer}  The increment of the movement. 1 = move right, -1 = move left
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		move: ( dir, step ) => {
-			BEAST.debugging.report(`hero: running move`, 1);
+			BEAST.debugging.report(`hero: move`, 1);
 
 			if( !BEAST.DEAD ) {
 				let position = { //our current position
@@ -182,7 +182,7 @@ BEAST.hero = (() => {
 // die, Hero dies
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		die: ( ) => {
-			BEAST.debugging.report(`hero: running die`, 1);
+			BEAST.debugging.report(`hero: die`, 1);
 
 			BEAST.DEATHS ++;
 			BEAST.DEAD = true;
@@ -202,6 +202,7 @@ BEAST.hero = (() => {
 					BEAST.DEAD = false;
 					BEAST.scaffolding.init();
 					BEAST.draw.init();
+					BEAST.beasts.init();
 				}, 3000);
 			}
 		},

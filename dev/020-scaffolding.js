@@ -23,7 +23,7 @@ BEAST.scaffolding = (() => {
 // init, Scaffold the canvas
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		init: () => {
-			BEAST.debugging.report(`scaffolding: running init`, 1);
+			BEAST.debugging.report(`scaffolding: init`, 1);
 
 			BEAST.HERO = {
 				x: BEAST.START.x,
@@ -34,7 +34,7 @@ BEAST.scaffolding = (() => {
 			BEAST.scaffolding.beasts();            //add beasts
 			BEAST.scaffolding.element( 'block' );  //add blocks to BEAST.BOARD
 			BEAST.scaffolding.element( 'solid' );  //add solids to BEAST.BOARD
-			BEAST.scaffolding.hero();              //last but not least we need the hero in BEAST.BOARD
+			BEAST.scaffolding.hero();              //last but not least we need the hero
 		},
 
 
@@ -43,7 +43,7 @@ BEAST.scaffolding = (() => {
 // cords, Scaffold the coordinates for the board
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		cords: () => {
-			BEAST.debugging.report(`scaffolding: running cords`, 1);
+			BEAST.debugging.report(`scaffolding: cords`, 1);
 
 			for(let i = 0; i < ( BEAST.MINHEIGHT - 7 ); i++) {
 				BEAST.BOARD[ i ] = []; //add array per row
@@ -56,7 +56,7 @@ BEAST.scaffolding = (() => {
 // hero, Scaffold the hero onto the board
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		hero: () => {
-			BEAST.debugging.report(`scaffolding: running hero`, 1);
+			BEAST.debugging.report(`scaffolding: hero`, 1);
 
 			BEAST.BOARD[ BEAST.HERO.y ][ BEAST.HERO.x ] = 'hero' //add the hero his/her starting position
 		},
@@ -67,7 +67,7 @@ BEAST.scaffolding = (() => {
 // beasts, Scaffold beasts onto the board
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		beasts: () => {
-			BEAST.debugging.report(`scaffolding: running beasts`, 1);
+			BEAST.debugging.report(`scaffolding: beasts`, 1);
 
 			let beasts = 0; //keep track of the beasts we distribute
 			BEAST.BEASTS = [];
@@ -79,7 +79,7 @@ BEAST.scaffolding = (() => {
 				if( BEAST.BOARD[ randomY ][ randomX ] === undefined ) { //no other elements on the spot
 					BEAST.BOARD[ randomY ][ randomX ] = 'beast'; //adding beast onto board
 
-					BEAST.BEASTS[`${randomX}x${randomY}`] = { //adding beast to beast registry
+					BEAST.BEASTS[`${randomX}-${randomY}`] = { //adding beast to beast registry
 						x: randomX,
 						y: randomY,
 					}
@@ -97,7 +97,7 @@ BEAST.scaffolding = (() => {
 // @param  element  {keyword}  We can only scaffold 'beast', 'block', 'solid'
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		element: ( element ) => {
-			BEAST.debugging.report(`scaffolding: running blocks`, 1);
+			BEAST.debugging.report(`scaffolding: blocks`, 1);
 
 			let count = 0; //keep track of elements we distribute
 

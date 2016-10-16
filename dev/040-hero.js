@@ -184,10 +184,11 @@ BEAST.hero = (() => {
 		die: ( ) => {
 			BEAST.debugging.report(`hero: die`, 1);
 
+			clearInterval( BEAST.INTERVAL );
 			BEAST.DEATHS ++;
 			BEAST.DEAD = true;
 
-			if( BEAST.DEATHS === BEAST.LIVES ) { //no more lives left
+			if( BEAST.DEATHS > BEAST.LIVES ) { //no more lives left
 				BEAST.draw.message('GAME OVER...'); //sorry :`(
 
 				setTimeout(() => {

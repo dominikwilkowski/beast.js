@@ -931,11 +931,15 @@ BEAST.checkSize = () => {
 	if( CliSize().columns < ( BEAST.MINWIDTH + 4 ) || CliSize().rows < ( BEAST.MINHEIGHT + 1 ) ) {
 
 		if( CliSize().columns < ( BEAST.MINWIDTH + 4 ) ) {
-			error = `  Your console is not wide enough for this game\n  (It is ${CliSize().columns} wide but needs to be ${( BEAST.MINWIDTH + 4 )})\n`;
+			error = `\n  Your console window is not wide enough for this game\n` +
+				`  Please resize your window to at least ${( BEAST.MINWIDTH + 4 )} x ${( BEAST.MINHEIGHT + 1 )}\n` +
+				`  (It is ${CliSize().columns} x ${CliSize().rows})\n`;
 		}
 
 		if( CliSize().rows < ( BEAST.MINHEIGHT + 1 ) ) {
-			error = `  Your console is not tall enough for this game\n  (It is ${CliSize().rows} tall but needs to be ${( BEAST.MINHEIGHT + 1 )})\n`;
+			error = `\n  Your console window is not tall enough for this game\n` +
+				`  Please resize your window to at least ${( BEAST.MINWIDTH + 4 )} x ${( BEAST.MINHEIGHT + 1 )}\n` +
+				`  (It is ${CliSize().columns} x ${CliSize().rows})\n`;
 		}
 	}
 

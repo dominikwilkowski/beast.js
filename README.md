@@ -61,6 +61,7 @@ TODO
 
 
 ## Release History
+* 0.1.2  -  Fixed error message
 * 0.1.1  -  Added level indicator, fixed lives display
 * 0.1.0  -  alpha release
 

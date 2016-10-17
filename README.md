@@ -36,7 +36,7 @@ yarn
 Then run:
 
 ```shell
-npm start
+node prod/index.js
 ```
 
 
@@ -61,6 +61,7 @@ TODO
 
 
 ## Release History
+* 0.1.1  -  Added level indicator, fixed lives display
 * 0.1.0  -  alpha release
 
 

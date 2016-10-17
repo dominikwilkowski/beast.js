@@ -54,11 +54,17 @@ const BEAST = (() => { //constructor factory
 			},
 			2: {          //increase beasts and solids, decrease blocks
 				beast: 3,
+				block: 400,
+				solid: 100,
+				speed: 1000,
+			},
+			3: {          //increase beasts and solids, decrease blocks
+				beast: 5,
 				block: 350,
 				solid: 200,
 				speed: 1000,
 			},
-			3: {          //increase beasts and solids, decrease blocks and speed
+			4: {          //increase beasts and solids, decrease blocks and speed
 				beast: 10,
 				block: 100,
 				solid: 500,

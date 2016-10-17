@@ -73,6 +73,7 @@ const BEAST = (() => { //constructor factory
 		},
 		SYMBOLS: {      //symbols for element
 			hero: Chalk.cyan('¶'),
+			lives: '¶',
 			beast: Chalk.green('Φ'),
 			block: Chalk.gray('▓'),
 			solid: Chalk.white('▓'),

@@ -42,7 +42,10 @@ node prod/index.js
 
 ## How to play
 
-The goal is to squash all beasts in each level. To squash a beast between two or more blocks. Press `q` to quit.
+The goal is to squash all beasts in each level. To squash a beast between two or more blocks.
+When a beast touches you, you die. You got four lives to spare.
+Once all beasts are squashed you move on to the next level. There are four levels so far. Easily configurable if you want to extend them.
+Press `q` to quit.
 
 
 ## Contributing
@@ -61,6 +64,7 @@ TODO
 
 
 ## Release History
+* 0.1.3  -  Improved drawing
 * 0.1.2  -  Fixed error message
 * 0.1.1  -  Added level indicator, fixed lives display
 * 0.1.0  -  alpha release

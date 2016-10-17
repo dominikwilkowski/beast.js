@@ -87,9 +87,11 @@ BEAST.draw = (() => {
 // score, Draw the score at the bottom of the frame
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		score: () => {
+			BEAST.debugging.report(`draw: score`, 1);
+
 			customStdout.muted = false;
 
-			//testing screen size and just printing on error
+			//testing screen size
 			let error = BEAST.checkSize();
 			if( error === '' ) {
 				let top = Math.floor( ( CliSize().rows - BEAST.MINHEIGHT ) / 2 );
@@ -101,8 +103,39 @@ BEAST.draw = (() => {
 				//calculate the space between lives and beast count
 				let spaceMiddle = ( BEAST.MINWIDTH - 2 ) - ( 3 * BEAST.LIVES ) - 6 - ( Object.keys( BEAST.BEASTS ).length.toString().length );
 
-				BEAST.RL.write(`${spaceLeft}${Chalk.red('  ❤').repeat( BEAST.LIVES - BEAST.DEATHS )}${Chalk.gray('  ❤').repeat( BEAST.DEATHS )}`);
+				BEAST.RL.write(
+					`${spaceLeft}${Chalk.red(`  ${BEAST.SYMBOLS.hero}`).repeat( BEAST.LIVES - BEAST.DEATHS )}` +
+					`${Chalk.gray(`  ${BEAST.SYMBOLS.hero}`).repeat( BEAST.DEATHS )}`
+				);
+
 				BEAST.RL.write(`${' '.repeat( spaceMiddle )}  ${ Object.keys( BEAST.BEASTS ).length } x ${BEAST.SYMBOLS.beast}`);
+
+				Readline.cursorTo( BEAST.RL, 0, (CliSize().rows - 1) ); //go to bottom of board and rest cursor there
+			}
+
+			customStdout.muted = true;
+		},
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Public function
+// level, Draw the score at the bottom of the frame
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+		level: () => {
+			BEAST.debugging.report(`draw: level`, 1);
+
+			customStdout.muted = false;
+
+			//testing screen size
+			let error = BEAST.checkSize();
+			if( error === '' ) {
+				let top = Math.floor( ( CliSize().rows - BEAST.MINHEIGHT ) / 2 );
+				let spaceLeft = Math.floor( ( CliSize().columns - BEAST.MINWIDTH ) / 2 ); //horizontal alignment
+				let spaceMiddle = ( BEAST.MINWIDTH - 2 ) - 9 - ( Object.keys( BEAST.LEVEL ).length.toString().length ); //calculate the space so we can right align
+
+				Readline.cursorTo( BEAST.RL, (spaceLeft + spaceMiddle), (top + 2) ); //go to top above the board and right align
+
+				BEAST.RL.write(`  Level: ${BEAST.LEVEL}`);
 
 				Readline.cursorTo( BEAST.RL, 0, (CliSize().rows - 1) ); //go to bottom of board and rest cursor there
 			}
@@ -186,6 +219,7 @@ BEAST.draw = (() => {
 
 			BEAST.draw.frame(); //draw frame,
 			BEAST.draw.score(); //draw score,
+			BEAST.draw.level(); //draw level,
 			BEAST.draw.board(); //draw board, I mean the function names are kinda obvious so this comment really doesn't help much.
 		},
 	}

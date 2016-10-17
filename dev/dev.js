@@ -73,6 +73,7 @@ const BEAST = (() => { //constructor factory
 		},
 		SYMBOLS: {      //symbols for element
 			hero: Chalk.cyan('¶'),
+			lives: '¶',
 			beast: Chalk.green('Φ'),
 			block: Chalk.gray('▓'),
 			solid: Chalk.white('▓'),
@@ -404,8 +405,8 @@ BEAST.draw = (() => {
 				let spaceMiddle = ( BEAST.MINWIDTH - 2 ) - ( 3 * BEAST.LIVES ) - 3 - ( Object.keys( BEAST.BEASTS ).length.toString().length );
 
 				BEAST.RL.write(
-					`${Chalk.red(` ${BEAST.SYMBOLS.hero}`).repeat( BEAST.LIVES - BEAST.DEATHS )}` +
-					`${Chalk.gray(`  ${BEAST.SYMBOLS.hero}`).repeat( BEAST.DEATHS )}` +
+					`${Chalk.cyan(` ${BEAST.SYMBOLS.lives}`).repeat( BEAST.LIVES - BEAST.DEATHS )}` +
+					`${Chalk.gray(` ${BEAST.SYMBOLS.lives}`).repeat( BEAST.DEATHS )}` +
 					`${' '.repeat( spaceMiddle )}  ${ Object.keys( BEAST.BEASTS ).length } x ${BEAST.SYMBOLS.beast}`
 				);
 

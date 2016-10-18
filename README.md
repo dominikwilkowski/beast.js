@@ -21,6 +21,7 @@
 
 ## How to install
 
+Note: This games needs node >= 6
 Download the game from this repo and install it's dependencies via:
 
 ```shell

@@ -64,6 +64,7 @@ TODO
 
 
 ## Release History
+* 0.1.5  -  Fixed dependencies
 * 0.1.4  -  Fixed lives color bug
 * 0.1.3  -  Improved drawing
 * 0.1.2  -  Fixed error message

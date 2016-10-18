@@ -1,7 +1,7 @@
 {
 	"name": "beast.js",
 	"description": "ANSI Beast for node",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"homepage": "https://github.com/dominikwilkowski/beast.js",
 	"author": {
 		"name": "Dominik Wilkowski",

@@ -21,8 +21,9 @@
 
 ## How to install
 
-Note: This games needs node >= 6
-Download the game from this repo and install it's dependencies via:
+_Note: This games requires [Node](https://nodejs.org/) >= 6._
+
+[Download the game](https://github.com/dominikwilkowski/beast.js/archive/master.zip) from this repo and install it's dependencies via:
 
 ```shell
 npm i
